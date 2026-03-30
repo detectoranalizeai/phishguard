@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+
+  :root {
+    --bg: #050a0f;
+    --bg2: #0a1520;
+    --bg3: #0f1f30;
+    --green: #00ff88;
+    --green-dim: #00cc6a;
+    --red: #ff3366;
+    --amber: #ffaa00;
+    --blue: #00aaff;
+    --text: #c8dde8;
+    --muted: #4a6a80;
+    --border: #1a3a50;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,255,136,0.015) 2px, rgba(0,255,136,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .container { max-width: 820px; margin: 0 auto; padding: 32px 24px; }
+
+  .header { text-align: center; margin-bottom: 40px; animation: fadeDown 0.6s ease; }
+
+  .logo {
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px; margin-bottom: 10px;
+  }
+
+  .shield-icon { width: 44px; height: 44px; }
+  .shield-icon svg { width: 100%; height: 100%; }
+
+  .title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px; font-weight: 700; letter-spacing: 3px;
+    color: var(--green); text-shadow: 0 0 20px rgba(0,255,136,0.4);
+  }
+
+  .subtitle { font-size: 12px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+  .scan-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 24px; margin-bottom: 24px;
+    position: relative; overflow: hidden;
+  }
+
+  .scan-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    animation: sweep 3s ease-in-out infinite;
+  }
+
+  @keyframes sweep { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .label { font-size: 11px; color: var(--muted); letter-spacing: 2px; margin-bottom: 10px; text-transform: uppercase; }
+
+  .input-row { display: flex; gap: 12px; }
+
+  .url-input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 3px; padding: 12px 16px;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px;
+    color: var(--green); outline: none; transition: border-color 0.2s;
+    caret-color: var(--green);
+  }
+  .url-input:focus { border-color: var(--green); box-shadow: 0 0 10px rgba(0,255,136,0.1); }
+  .url-input::placeholder { color: var(--muted); }
+
+  .scan-btn {
+    background: transparent; border: 1px solid var(--green); color: var(--green);
+    padding: 12px 24px; font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; font-weight: 700; letter-spacing: 2px;
+    cursor: pointer; border-radius: 3px; transition: all 0.2s;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .scan-btn:hover:not(:disabled) { background: var(--green); color: var(--bg); box-shadow: 0 0 20px rgba(0,255,136,0.3); }
+  .scan-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .loading-bar { display: none; margin-top: 16px; }
+  .loading-bar.active { display: block; }
+  .loading-text { font-size: 11px; color: var(--green); letter-spacing: 1px; margin-bottom: 6px; animation: blink 0.8s step-end infinite; }
+  .progress-track { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s ease; box-shadow: 0 0 8px var(--green); }
+
+  .result-panel { display: none; animation: fadeUp 0.5s ease; }
+  .result-panel.visible { display: block; }
+
+  .verdict-card {
+    border: 1px solid var(--border); border-radius: 4px; padding: 24px;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 24px;
+    background: var(--bg2); position: relative; overflow: hidden;
+  }
+  .verdict-card.safe { border-color: var(--green); }
+  .verdict-card.suspicious { border-color: var(--amber); }
+  .verdict-card.danger { border-color: var(--red); }
+
+  .score-ring {
+    width: 80px; height: 80px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700;
+    flex-shrink: 0; position: relative;
+  }
+  .score-ring svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+  .score-ring .score-num { position: relative; z-index: 1; }
+  .score-ring.safe { color: var(--green); }
+  .score-ring.suspicious { color: var(--amber); }
+  .score-ring.danger { color: var(--red); }
+
+  .verdict-info { flex: 1; }
+  .verdict-label { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+  .verdict-label.safe { color: var(--green); }
+  .verdict-label.suspicious { color: var(--amber); }
+  .verdict-label.danger { color: var(--red); }
+  .verdict-url { font-size: 12px; color: var(--muted); word-break: break-all; }
+
+  .signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+  .signal-item {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .signal-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .signal-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .signal-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .signal-dot.bad { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .signal-text { flex: 1; }
+  .signal-title { font-size: 11px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+  .signal-value { font-size: 13px; color: var(--text); }
+
+  .ai-section {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-left: 3px solid var(--blue); border-radius: 4px;
+    padding: 20px; margin-bottom: 16px;
+  }
+  .ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .ai-badge {
+    background: rgba(0,170,255,0.1); border: 1px solid rgba(0,170,255,0.3);
+    color: var(--blue); font-size: 10px; letter-spacing: 2px;
+    padding: 3px 8px; border-radius: 2px;
+  }
+  .ai-text { font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; }
+
+  .disclaimer { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.6; margin-top: 8px; }
+
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .example-chip {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--muted); font-size: 11px; padding: 5px 10px;
+    border-radius: 2px; cursor: pointer; transition: all 0.2s;
+  }
+  .example-chip:hover { border-color: var(--green); color: var(--green); }
+
+  .error-msg {
+    background: rgba(255,51,102,0.08); border: 1px solid rgba(255,51,102,0.3);
+    color: var(--red); padding: 12px 16px; border-radius: 4px;
+    font-size: 13px; margin-top: 12px; display: none;
+  }
+
+  @media (max-width: 600px) {
+    .signals-grid { grid-template-columns: 1fr; }
+    .input-row { flex-direction: column; }
+    .verdict-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">
+      <div class="shield-icon">
+        <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 3L6 10V22C6 31 13 39 22 41C31 39 38 31 38 22V10L22 3Z"
+            stroke="#00ff88" stroke-width="1.5" fill="rgba(0,255,136,0.06)"/>
+          <path d="M15 22L20 27L29 17" stroke="#00ff88" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="title">PHISHGUARD</div>
+    </div>
+    <div class="subtitle">AI-анализ фишинговых ссылок и сайтов</div>
+  </div>
+
+  <div class="scan-card">
+    <div class="label">// Введите URL для проверки</div>
+    <div class="input-row">
+      <input class="url-input" id="urlInput"
+        placeholder="https://paypai.com/login?secure=true"
+        autocomplete="off" spellcheck="false">
+      <button class="scan-btn" id="scanBtn" onclick="startScan()">▶ СКАНИРОВАТЬ</button>
+    </div>
+    <div class="examples">
+      <span class="example-chip" onclick="setUrl('https://paypa1.com/secure-login')">paypa1.com</span>
+      <span class="example-chip" onclick="setUrl('https://bank-of-america.secure-login.xyz/verify')">bank-of-america.secure-login.xyz</span>
+      <span class="example-chip" onclick="setUrl('https://google.com')">google.com</span>
+      <span class="example-chip" onclick="setUrl('https://аmazon.com/login')">аmazon.com (кириллица)</span>
+      <span class="example-chip" onclick="setUrl('https://paypal.com.account-verify.ru/login?token=abc123')">paypal.com.account-verify.ru</span>
+    </div>
+    <div class="loading-bar" id="loadingBar">
+      <div class="loading-text" id="loadingText">АНАЛИЗИРУЮ...</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="result-panel" id="resultPanel">
+    <div class="verdict-card" id="verdictCard">
+      <div class="score-ring" id="scoreRing">
+        <svg viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" stroke="#1a3a50" stroke-width="4" fill="none"/>
+          <circle cx="40" cy="40" r="34" id="scoreCircle" stroke="#00ff88" stroke-width="4" fill="none"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6" stroke-linecap="round"
+            style="transition: stroke-dashoffset 1s ease;"/>
+        </svg>
+        <span class="score-num" id="scoreNum">0</span>
+      </div>
+      <div class="verdict-info">
+        <div class="verdict-label" id="verdictLabel">—</div>
+        <div class="verdict-url" id="verdictUrl"></div>
+      </div>
+    </div>
+
+    <div class="signals-grid" id="signalsGrid"></div>
+
+    <div class="ai-section">
+      <div class="ai-header"><div class="ai-badge">AI АНАЛИЗ</div></div>
+      <div class="ai-text" id="aiText"></div>
+    </div>
+
+    <div class="disclaimer">⚠ Инструмент носит информационный характер. Всегда проявляйте осторожность при переходе по незнакомым ссылкам.</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// БЛОК 1: Вспомогательная функция
+// ══════════════════════════════════════════════════════
+function setUrl(url) {
+  document.getElementById('urlInput').value = url;
+}
+
+// ══════════════════════════════════════════════════════
+// БЛОК 2: Движок правил — analyzeUrl(rawUrl)
+// Возвращает: { riskScore, verdict, level, signals, hostname, url }
+// ══════════════════════════════════════════════════════
+function analyzeUrl(rawUrl) {
+  const signals = [];
+  let riskScore = 0;
+
+  // Нормализация: добавляем схему если нет
+  let url = rawUrl.trim();
+  if (!/^https?:\/\//i.test(url)) url = 'http://' + url;
+
+  let parsed;
+  try { parsed = new URL(url); }
+  catch { return { error: 'Некорректный URL' }; }
+
+  const hostname = parsed.hostname.toLowerCase();
+  const path     = parsed.pathname + parsed.search;
+
+  // ── Проверка 1: HTTP vs HTTPS ─────────────────────
+  // Риск: +15 если нет шифрования
+  if (parsed.protocol === 'http:') {
+    riskScore += 15;
+    signals.push({ key: 'Протокол', value: 'HTTP (нет шифрования)', level: 'bad' });
+  } else {
+    signals.push({ key: 'Протокол', value: 'HTTPS ✓', level: 'ok' });
+  }
+
+  // ── Проверка 2: Омоглифы / не-ASCII символы ───────
+  // Риск: +40 — серьёзная угроза (IDN Homograph Attack)
+  const hasHomoglyph = /[^\x00-\x7F]/.test(hostname);
+  if (hasHomoglyph) {
+    riskScore += 40;
+    signals.push({ key: 'Символы домена', value: 'Обнаружены не-ASCII символы (возможная омоглифная атака)', level: 'bad' });
+  } else {
+    signals.push({ key: 'Символы домена', value: 'Только ASCII символы', level: 'ok' });
+  }
+
+  // ── Проверка 3: Бренд-имперсонация ────────────────
+  // Риск: +35 — бренд в домене, но не как основной домен
+  const brands = [
+    'paypal','google','apple','amazon','facebook','microsoft',
+    'netflix','bank','visa','mastercard','tinkoff','sberbank',
+    'alfabank','vtb','gazprom','gosuslugi','telegram','instagram',
+    'vk','mail.ru','yandex'
+  ];
+  const tld = hostname.split('.').slice(-2).join('.');
+
+  let brandHit = null;
+  for (const brand of brands) {
+    // Прямое вхождение бренда, но домен не является легитимным
+    if (hostname.includes(brand) &&
+        !hostname.endsWith(brand + '.com') &&
+        !hostname.endsWith(brand + '.ru') &&
+        !hostname.endsWith(brand + '.net')) {
+      brandHit = brand;
+      break;
+    }
+    // Leet-speak замены: 0→o, 1→l, 3→e, 4→a, 5→s
+    const leet = hostname
+      .replace(/0/g,'o').replace(/1/g,'l').replace(/3/g,'e')
+      .replace(/4/g,'a').replace(/5/g,'s').replace(/\|/g,'l');
+    if (leet.includes(brand) &&
+        !hostname.endsWith(brand + '.com') &&
+        !hostname.endsWith(brand + '.ru')) {
+      brandHit = brand + ' (leet-замена)';
+      break;
+    }
+  }
+
+  if (brandHit) {
+    riskScore += 35;
+    signals.push({ key: 'Бренд-имперсонация', value: `Совпадение с «${brandHit}» в нетипичном домене`, level: 'bad' });
+  }
+
+  // ── Проверка 4: Подозрительные TLD ───────────────
+  // Риск: +20 — мусорные доменные зоны
+  const suspTlds = [
+    '.xyz','.tk','.ml','.ga','.cf','.gq','.top','.click',
+    '.loan','.work','.date','.win','.stream','.gdn','.racing',
+    '.review','.science','.party','.accountant','.download',
+    '.bid','.faith'
+  ];
+  const hasSuspTld = suspTlds.some(t => hostname.endsWith(t));
+  if (hasSuspTld) {
+    riskScore += 20;
+    signals.push({ key: 'TLD домена', value: `Подозрительный домен верхнего уровня`, level: 'warn' });
+  } else {
+    signals.push({ key: 'TLD домена', value: 'Стандартный TLD', level: 'ok' });
+  }
+
+  // ── Проверка 5: Количество субдоменов ────────────
+  // Риск: +15 — глубокие цепочки субдоменов (paypal.com.login.evil.ru)
+  const parts = hostname.split('.');
+  if (parts.length > 3) {
+    riskScore += 15;
+    signals.push({ key: 'Структура домена', value: `Много субдоменов (${parts.length} уровней) — типичная маскировка`, level: 'warn' });
+  }
+
+  // ── Проверка 6: Длина URL ─────────────────────────
+  // Риск: +10 — фишеры любят длинные URL для маскировки
+  if (rawUrl.length > 100) {
+    riskScore += 10;
+    signals.push({ key: 'Длина URL', value: `${rawUrl.length} символов — подозрительно длинный`, level: 'warn' });
+  } else {
+    signals.push({ key: 'Длина URL', value: `${rawUrl.length} символов — норма`, level: 'ok' });
+  }
+
+  // ── Проверка 7: IP-адрес вместо домена ───────────
+  // Риск: +30 — прямое обращение к IP = нет легитимного домена
+  const isIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname);
+  if (isIp) {
+    riskScore += 30;
+    signals.push({ key: 'Адресация', value: 'Прямой IP-адрес вместо домена', level: 'bad' });
+  }
+
+  // ── Проверка 8: Подозрительные ключевые слова ────
+  // Риск: +15 — когда в пути 2+ фишинговых слова
+  const suspKeywords = [
+    'login','signin','secure','verify','account','update',
+    'confirm','banking','password','credential','token',
+    'auth','recover','unlock'
+  ];
+  const keyHits = suspKeywords.filter(k => path.includes(k));
+  if (keyHits.length >= 2) {
+    riskScore += 15;
+    signals.push({ key: 'Ключевые слова', value: `Подозрительные параметры: ${keyHits.slice(0,3).join(', ')}`, level: 'warn' });
+  }
+
+  // ── Проверка 9: Количество дефисов в домене ──────
+  // Риск: +15 — honest-bank-login-secure.com — характерный паттерн
+  const dashCount = (hostname.match(/-/g) || []).length;
+  if (dashCount >= 3) {
+    riskScore += 15;
+    signals.push({ key: 'Дефисы в домене', value: `${dashCount} дефиса — нетипично для легитимных сайтов`, level: 'warn' });
+  }
+
+  // ── Проверка 10: Параметры редиректа ─────────────
+  // Риск: +20 — скрытые переходы через ?url= или ?goto=
+  const hasRedirect = /redirect|url=|link=|goto=|forward=/i.test(path);
+  if (hasRedirect) {
+    riskScore += 20;
+    signals.push({ key: 'Редиректы', value: 'Обнаружены параметры переадресации', level: 'warn' });
+  }
+
+  // ── Итоговый расчёт ───────────────────────────────
+  riskScore = Math.min(riskScore, 100);
+
+  let verdict, level;
+  if (riskScore < 20)      { verdict = 'БЕЗОПАСНО';    level = 'safe'; }
+  else if (riskScore < 55) { verdict = 'ПОДОЗРИТЕЛЬНО'; level = 'suspicious'; }
+  else                     { verdict = 'ОПАСНО';        level = 'danger'; }
+
+  return { riskScore, verdict, level, signals, hostname, url };
+}
+
+// ══════════════════════════════════════════════════════
+// БЛОК 3: Основной флоу — startScan()
+// Оркестрирует UI, вызывает analyzeUrl() и Claude API
+// ══════════════════════════════════════════════════════
+async function startScan() {
+  const rawUrl = document.getElementById('urlInput').value.trim();
+  if (!rawUrl) return;
+
+  const btn    = document.getElementById('scanBtn');
+  const bar    = document.getElementById('loadingBar');
+  const errEl  = document.getElementById('errorMsg');
+  const panel  = document.getElementById('resultPanel');
+
+  // Сброс состояния
+  btn.disabled = true;
+  bar.classList.add('active');
+  panel.classList.remove('visible');
+  errEl.style.display = 'none';
+
+  // Анимированный прогресс-бар с псевдо-шагами
+  const steps = [
+    'РАЗБОР URL...', 'АНАЛИЗ ДОМЕНА...', 'ПРОВЕРКА ПАТТЕРНОВ...',
+    'ЗАПРОС К НЕЙРОСЕТИ...', 'ФОРМИРОВАНИЕ ОТЧЁТА...'
+  ];
+  let step = 0;
+  const prog    = document.getElementById('progressFill');
+  const loadTxt = document.getElementById('loadingText');
+  const ticker  = setInterval(() => {
+    step = Math.min(step + 1, steps.length - 1);
+    loadTxt.textContent = steps[step];
+    prog.style.width = ((step + 1) / steps.length * 80) + '%';
+  }, 700);
+
+  // ── Шаг A: Локальный анализ правилами ─────────────
+  const local = analyzeUrl(rawUrl);
+
+  if (local.error) {
+    clearInterval(ticker);
+    bar.classList.remove('active');
+    btn.disabled = false;
+    errEl.textContent = '⚠ ' + local.error;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // ── Шаг B: AI-анализ через Claude API ─────────────
+  let aiResult = '';
+  try {
+    const prompt = `Ты эксперт по кибербезопасности. Проанализируй этот URL на предмет фишинга:
+
+URL: ${rawUrl}
+Автоматический анализ: риск ${local.riskScore}/100, вердикт «${local.verdict}»
+Найденные сигналы: ${local.signals.map(s => `${s.key}: ${s.value} [${s.level}]`).join('; ')}
+
+Дай КРАТКИЙ (3-5 предложений) анализ на русском языке:
+1. Объясни ПОЧЕМУ это фишинг / безопасный сайт
+2. Укажи конкретные тревожные или положительные признаки
+3. Дай практическую рекомендацию
+
+Отвечай без заголовков и списков, только связный текст.`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await resp.json();
+    aiResult = data.content?.find(b => b.type === 'text')?.text
+      || 'Не удалось получить ответ от ИИ.';
+  } catch(e) {
+    aiResult = 'Нейросетевой анализ недоступен. Используйте результаты автоматической проверки выше.';
+  }
+
+  // ── Завершение UI ──────────────────────────────────
+  clearInterval(ticker);
+  prog.style.width = '100%';
+  await new Promise(r => setTimeout(r, 300));
+  bar.classList.remove('active');
+  btn.disabled = false;
+
+  renderResult(local, aiResult);
+}
+
+// ══════════════════════════════════════════════════════
+// БЛОК 4: Отрисовка результата — renderResult()
+// ══════════════════════════════════════════════════════
+function renderResult(local, aiText) {
+  const { riskScore, verdict, level, signals, hostname } = local;
+  const circum = 213.6; // 2 * π * r (r=34)
+
+  // Score ring: класс + цвет дуги + анимация заполнения
+  const ring    = document.getElementById('scoreRing');
+  const circle  = document.getElementById('scoreCircle');
+  const colors  = { safe: '#00ff88', suspicious: '#ffaa00', danger: '#ff3366' };
+  ring.className = 'score-ring ' + level;
+  circle.setAttribute('stroke', colors[level]);
+  document.getElementById('scoreNum').textContent = riskScore;
+  setTimeout(() => {
+    circle.style.strokeDashoffset = circum - (riskScore / 100) * circum;
+  }, 100);
+
+  // Verdict card
+  const vc = document.getElementById('verdictCard');
+  vc.className = 'verdict-card ' + level;
+  const vl = document.getElementById('verdictLabel');
+  vl.className = 'verdict-label ' + level;
+  vl.textContent = verdict;
+  document.getElementById('verdictUrl').textContent = hostname;
+
+  // Сигналы → карточки сетки
+  document.getElementById('signalsGrid').innerHTML = signals.map(s => `
+    <div class="signal-item">
+      <div class="signal-dot ${s.level}"></div>
+      <div class="signal-text">
+        <div class="signal-title">${s.key}</div>
+        <div class="signal-value">${s.value}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // AI текст
+  document.getElementById('aiText').textContent = aiText;
+
+  // Показываем панель
+  document.getElementById('resultPanel').classList.add('visible');
+  document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
