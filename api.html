@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard | Обратная связь</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --dark-bg: #05070a; }
+        body { background-color: var(--dark-bg); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .bg-glow { position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 60% -10%,rgba(16,185,129,0.13) 0%,transparent 50%),radial-gradient(circle at 10% 90%,rgba(16,185,129,0.06) 0%,transparent 40%);z-index:-1; }
+        .glass { background:rgba(16,20,29,0.6);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.05); }
+        .glass-card { background:rgba(10,14,20,0.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.05);border-radius:1rem;transition:border-color .3s,box-shadow .3s,transform .3s; }
+        .glass-card:hover { border-color:rgba(16,185,129,.35);box-shadow:0 0 24px rgba(16,185,129,.1);transform:translateY(-3px); }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .anim { animation:fadeInUp .7s ease forwards; }
+        .d1{animation-delay:.05s;opacity:0}.d2{animation-delay:.15s;opacity:0}.d3{animation-delay:.25s;opacity:0}.d4{animation-delay:.35s;opacity:0}
+        .lang-toggle{display:flex;align-items:center;border:1px solid rgba(16,185,129,.3);border-radius:6px;overflow:hidden;}
+        .lang-btn{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:4px 9px;cursor:pointer;transition:all .2s;background:transparent;color:#475569;border:none;}
+        .lang-btn.active{background:rgba(16,185,129,.2);color:#10b981;}
+        nav{position:relative;z-index:100;}
+        #mobileMenu{
+            display:none;flex-direction:column;
+            position:absolute;top:100%;left:0;right:0;z-index:200;
+            background:rgba(30,35,45,0.97);
+            backdrop-filter:blur(20px);
+            border-bottom:1px solid rgba(255,255,255,.05);
+        }
+        #mobileMenu.open{display:flex;}
+        #mobileMenu a{
+            display:block;padding:15px 24px;font-size:11px;font-weight:700;
+            text-transform:uppercase;letter-spacing:2px;color:#64748b;
+            border-bottom:1px solid rgba(255,255,255,.04);text-decoration:none;
+            transition:color .2s;font-family:'JetBrains Mono',monospace;cursor:pointer;
+        }
+        #mobileMenu a:hover,#mobileMenu a.active-page{color:#10b981;}
+        #mobileMenu .lang-row{padding:12px 24px;border-bottom:1px solid rgba(255,255,255,.04);}
+        .tg-card {
+            display:flex;align-items:center;gap:16px;
+            background:rgba(10,14,20,.8);
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:14px;
+            padding:20px;
+            text-decoration:none;
+            transition:border-color .25s,box-shadow .25s,transform .25s;
+        }
+        .tg-card:hover { border-color:rgba(16,185,129,.4);box-shadow:0 0 24px rgba(16,185,129,.1);transform:translateY(-2px); }
+        .tg-avatar {
+            width:52px;height:52px;border-radius:50%;
+            background:linear-gradient(135deg,rgba(16,185,129,.3),rgba(16,185,129,.1));
+            border:2px solid rgba(16,185,129,.4);
+            display:flex;align-items:center;justify-content:center;
+            flex-shrink:0;font-size:22px;
+        }
+        .tg-handle { color:#10b981;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700; }
+        .tg-role { color:#64748b;font-size:12px;margin-top:2px; }
+        .tg-arrow { margin-left:auto;color:#334155;flex-shrink:0;transition:color .2s; }
+        .tg-card:hover .tg-arrow { color:#10b981; }
+        .tg-main-btn {
+            display:inline-flex;align-items:center;gap:10px;
+            background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.4);
+            color:#34d399;padding:14px 28px;border-radius:12px;
+            text-decoration:none;font-family:'JetBrains Mono',monospace;
+            font-size:13px;font-weight:700;transition:all .2s;
+        }
+        .tg-main-btn:hover { background:rgba(16,185,129,.25);border-color:rgba(16,185,129,.6);transform:translateY(-2px); }
+        .tip-box{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:.75rem;padding:1rem 1.25rem;}
+        .faq-item{border-bottom:1px solid rgba(255,255,255,.05);}
+        .faq-q{cursor:pointer;padding:1rem 0;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+        .faq-a{display:none;padding-bottom:1rem;color:#94a3b8;font-size:.875rem;line-height:1.7;}
+        .faq-a.open{display:block;}
+        .faq-arrow{transition:transform .2s;flex-shrink:0;color:#475569;}
+        .faq-arrow.open{transform:rotate(180deg);}
+    </style>
+</head>
+<body class="text-slate-300">
+<div class="bg-glow"></div>
+
+<nav class="px-4 md:px-6 py-4 md:py-5 flex justify-between items-center max-w-7xl mx-auto anim border-b border-white/[0.03]">
+    <a href="index.html" class="flex items-center space-x-2 md:space-x-3 group">
+        <div class="w-9 h-9 md:w-10 md:h-10 border-2 border-emerald-500 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] transition">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+        </div>
+        <span class="text-lg md:text-xl font-black tracking-tighter text-white uppercase">PhishGuard</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+        <div class="flex space-x-8 text-xs font-bold uppercase tracking-widest text-slate-500">
+            <a href="database.html" class="hover:text-emerald-500 transition" data-i18n="nav_db">База угроз</a>
+            <a href="api.html" class="text-emerald-500 border-b border-emerald-500/50" data-i18n="nav_api">Обратная связь</a>
+            <a href="index.html" class="hover:text-emerald-500 transition" data-i18n="nav_scanner">Сканер</a>
+        </div>
+        <div class="lang-toggle">
+            <button class="lang-btn" id="btnRu" onclick="setLang('ru')">RU</button>
+            <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+        </div>
+    </div>
+    <button class="md:hidden flex flex-col gap-1.5 p-2 bg-transparent border-none cursor-pointer" onclick="toggleMenu()">
+        <span class="block w-6 h-0.5 bg-slate-400"></span>
+        <span class="block w-6 h-0.5 bg-slate-400"></span>
+        <span class="block w-4 h-0.5 bg-slate-400"></span>
+    </button>
+    <div id="mobileMenu">
+        <a href="database.html" data-i18n="nav_db">База угроз</a>
+        <a href="api.html" class="active-page" data-i18n="nav_api">Обратная связь</a>
+        <a href="index.html" data-i18n="nav_scanner">Сканер</a>
+        <div class="lang-row">
+            <div class="lang-toggle" style="width:fit-content">
+                <button class="lang-btn" id="btnRuM" onclick="setLang('ru')">RU</button>
+                <button class="lang-btn" id="btnEnM" onclick="setLang('en')">EN</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 md:px-6 pt-12 md:pt-16 pb-24">
+
+    <div class="anim d1 text-center mb-12">
+        <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
+            <span data-i18n="h1">Обратная</span> <span class="text-emerald-500" data-i18n="h2">связь</span>
+        </h1>
+        <p class="text-slate-400 leading-relaxed text-sm md:text-base" data-i18n="h_sub">
+            Вопросы, предложения или нашли ошибку? Напишите кому-нибудь из команды — ответим быстро.
+        </p>
+    </div>
+
+    <div class="anim d2 mb-10">
+        <p class="text-xs text-slate-600 uppercase tracking-widest font-semibold mb-4 mono" data-i18n="team_label">// Команда проекта</p>
+        <div class="space-y-3">
+
+            <a href="https://t.me/TurN1K05" target="_blank" class="tg-card">
+                <div class="tg-avatar">🎨</div>
+                <div class="min-w-0">
+                    <div class="tg-handle">@TurN1K05</div>
+                    <div class="tg-role" data-i18n="role1">Составитель презентации</div>
+                </div>
+                <svg class="tg-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+
+            <a href="https://t.me/MoNoGAMlE" target="_blank" class="tg-card">
+                <div class="tg-avatar">💻</div>
+                <div class="min-w-0">
+                    <div class="tg-handle">@MoNoGAMlE</div>
+                    <div class="tg-role" data-i18n="role2">Разработчик сайта</div>
+                </div>
+                <svg class="tg-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+
+            <a href="https://t.me/Nyaresytr" target="_blank" class="tg-card">
+                <div class="tg-avatar">🛡️</div>
+                <div class="min-w-0">
+                    <div class="tg-handle">@Nyaresytr</div>
+                    <div class="tg-role" data-i18n="role3">Администратор · Поддержка</div>
+                </div>
+                <svg class="tg-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+
+            <a href="https://t.me/wef122" target="_blank" class="tg-card">
+                <div class="tg-avatar">🎭</div>
+                <div class="min-w-0">
+                    <div class="tg-handle">@wef122</div>
+                    <div class="tg-role" data-i18n="role4">Администратор · Веб-дизайн</div>
+                </div>
+                <svg class="tg-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+    </div>
+
+    <div class="anim d3 text-center mb-12">
+        <div class="tip-box mb-6">
+            <p class="text-sm text-emerald-300 leading-relaxed" data-i18n="group_hint">
+                💬 Также можно написать в общий чат поддержки — там мы отвечаем быстрее всего.
+            </p>
+        </div>
+        <a href="https://t.me/+pl8qTAYlbi45MDMy" target="_blank" class="tg-main-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/>
+            </svg>
+            <span data-i18n="group_btn">Открыть чат поддержки в Telegram</span>
+        </a>
+    </div>
+
+    <div class="anim d4">
+        <p class="text-xs text-slate-600 uppercase tracking-widest font-semibold mb-4 mono" data-i18n="faq_label">// Частые вопросы</p>
+        <div class="glass-card p-4 md:p-6" id="faqBlock"></div>
+    </div>
+
+</main>
+
+<footer class="p-6 border-t border-gray-800 text-center text-xs text-gray-700 bg-black/20 mono">
+    <p>&copy; 2026 DetectorAnalizeAI. PhishGuard v0.1.0</p>
+</footer>
+
+<script>
+const T = {
+    ru:{
+        nav_db:'База угроз', nav_api:'Обратная связь', nav_scanner:'Сканер',
+        h1:'Обратная', h2:'связь',
+        h_sub:'Вопросы, предложения или нашли ошибку? Напишите кому-нибудь из команды — ответим быстро.',
+        team_label:'// Команда проекта',
+        role1:'Составитель презентации',
+        role2:'Разработчик сайта',
+        role3:'Администратор · Поддержка',
+        role4:'Администратор · Веб-дизайн',
+        group_hint:'💬 Также можно написать в общий чат поддержки — там мы отвечаем быстрее всего.',
+        group_btn:'Открыть чат поддержки в Telegram',
+        faq_label:'// Частые вопросы',
+        faqs:[
+            {q:'Нужно ли что-то устанавливать?', a:'Нет. PhishGuard работает прямо в браузере — на телефоне или компьютере. Ничего качать и устанавливать не нужно.'},
+            {q:'Как понять, что ссылка опасна?', a:'Мошенники создают сайты с адресами, похожими на настоящие. Например, «sberbank-online.xyz» вместо «sberbank.ru». Наш AI замечает такие хитрости и объясняет, что именно подозрительно.'},
+            {q:'Что делать, если я уже перешёл по подозрительной ссылке?', a:'Не вводите никаких данных. Закройте вкладку. Если уже ввели пароль — срочно смените его. Если это были банковские данные — позвоните в банк.'},
+            {q:'Это бесплатно?', a:'Да, базовая проверка ссылок полностью бесплатна. Никакой регистрации не требуется — просто вставьте ссылку и нажмите «Проверить».'},
+            {q:'Как связаться с командой?', a:'Напишите любому из участников команды по Telegram — ссылки на их профили есть выше на этой странице. Также можно написать в общий чат поддержки.'},
+        ],
+    },
+    en:{
+        nav_db:'Threat DB', nav_api:'Contact', nav_scanner:'Scanner',
+        h1:'Get in', h2:'touch',
+        h_sub:'Questions, suggestions or found a bug? Write to someone from our team — we respond quickly.',
+        team_label:'// Project team',
+        role1:'Presentation author',
+        role2:'Website developer',
+        role3:'Administrator · Support',
+        role4:'Administrator · Web design',
+        group_hint:'💬 You can also write to our general support chat — that\'s where we reply the fastest.',
+        group_btn:'Open Telegram support chat',
+        faq_label:'// FAQ',
+        faqs:[
+            {q:'Do I need to install anything?', a:'No. PhishGuard works right in your browser — on phone or computer. Nothing to download or install.'},
+            {q:'How do I know if a link is dangerous?', a:'Scammers create sites with addresses similar to real ones. For example, «sberbank-online.xyz» instead of «sberbank.ru». Our AI spots these tricks and explains exactly what looks suspicious.'},
+            {q:'What if I already clicked a suspicious link?', a:'Do not enter any data. Close the tab. If you already entered a password — change it immediately. If it was banking data — call your bank.'},
+            {q:'Is it free?', a:'Yes, basic link checking is completely free. No registration required — just paste a link and click «Scan».'},
+            {q:'How do I contact the team?', a:'Write to any team member on Telegram — their profile links are above on this page. You can also write to the general support chat.'},
+        ],
+    }
+};
+
+let lang = localStorage.getItem('pg_lang') || 'ru';
+
+function buildFaq() {
+    const t = T[lang];
+    document.getElementById('faqBlock').innerHTML = t.faqs.map((f,i)=>`
+        <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(${i})">
+                <span class="text-sm font-semibold text-slate-200">${f.q}</span>
+                <svg class="faq-arrow w-4 h-4" id="arr${i}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <div class="faq-a" id="ans${i}">${f.a}</div>
+        </div>`).join('');
+}
+
+function toggleFaq(i) {
+    document.getElementById('ans'+i).classList.toggle('open');
+    document.getElementById('arr'+i).classList.toggle('open');
+}
+
+function applyLang() {
+    const t = T[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => { const k=el.getAttribute('data-i18n'); if(t[k]!==undefined) el.textContent=t[k]; });
+    ['btnRu','btnRuM'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.toggle('active',lang==='ru'); });
+    ['btnEn','btnEnM'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.toggle('active',lang==='en'); });
+    buildFaq();
+}
+function setLang(l) { lang=l; localStorage.setItem('pg_lang',l); applyLang(); }
+
+let menuOpen = false;
+function toggleMenu() { menuOpen=!menuOpen; document.getElementById('mobileMenu').classList.toggle('open',menuOpen); }
+
+applyLang();
+</script>
+</body>
+</html>
