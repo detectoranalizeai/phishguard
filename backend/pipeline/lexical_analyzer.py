@@ -242,20 +242,19 @@ class LexicalAnalyzer:
 
     @staticmethod
     def _brand_in_subdomain(subdomains: list[str], sld: str) -> Optional[str]:
-        """
-        Detects brand impersonation via subdomain abuse:
-        paypal.com.evil.ru  →  subdomains=["paypal", "com"], sld="evil"
-
-        We check if any KNOWN_BRAND appears as a subdomain label
-        when the registered domain (sld) is NOT the brand itself.
-        """
+        leet_sld = (sld.replace('0','o').replace('1','l')
+                       .replace('3','e').replace('4','a')
+                       .replace('5','s').replace('|','l'))
         for brand in _KNOWN_BRANDS:
-            # Skip if this is legitimately the brand's own domain
             if sld == brand:
                 continue
-            # Check each subdomain label
+            if brand in sld or brand in leet_sld:
+                return brand
             for sub in subdomains:
-                if brand in sub:
+                leet_sub = (sub.replace('0','o').replace('1','l')
+                               .replace('3','e').replace('4','a')
+                               .replace('5','s'))
+                if brand in sub or brand in leet_sub:
                     return brand
         return None
 
